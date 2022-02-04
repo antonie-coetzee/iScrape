@@ -1,4 +1,4 @@
-import { Page } from "puppeteer";
+import { Browser, Page } from "puppeteer";
 import { Logger } from "winston";
 
 export type BaseContext = {
@@ -6,23 +6,29 @@ export type BaseContext = {
 };
 
 export type NavigatorContext = BaseContext & {
-  url: URL;
+  url: string;
+  browser: Browser;
 };
 
 export type SelectorContext = NavigatorContext & {
   page: Page;
 };
 
-export type Generator = (context: BaseContext) => Promise<URL | undefined>;
+export type Generator = (context: BaseContext) => Promise<string | undefined>;
 
 export type Navigator = (context: NavigatorContext) => Promise<Page>;
 
+export type ScrapeObject = { [index: string]: string | undefined };
+
 export type Selector = (
   context: SelectorContext
-) => Promise<{ [index: string]: string | undefined } | undefined>;
+) => Promise<ScrapeObject | undefined>;
 
-export type ScrapeConfig = {
+export type ScrapeSetup = {
   generator: Generator;
   navigator: Navigator;
   selector: Selector;
+  maxItterations?: number;
+  outputPath?: string;
+  outputUrls?: boolean;
 };
