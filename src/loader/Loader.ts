@@ -1,3 +1,3 @@
 export interface Loader {
-  import: (path:string)=>Promise<unknown>;
+  load: (path:string)=>Promise<unknown>;
 }

@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "module": "CommonJS"
+    "sourceMap": true
   },
   "include": [
     "src/**/*"
