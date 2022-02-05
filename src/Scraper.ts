@@ -41,7 +41,7 @@ export class Scraper {
         throw new Error(`max itterations exceeded: '${maxItterations}'`);
       }
 
-      this.logger.info(`step ${i}, url: '${url}'`);
+      this.logger.info(`(${i}) url: '${url}'`);
       const navigatorContext = {
         ...baseContext,
         url,
@@ -63,8 +63,8 @@ export class Scraper {
           continue;
         }
         scrapedData.push({ url:page.url(), data: scrapeObj });
+        await page.close();
       }
-
     }
 
     await this.outputScrapedData(
