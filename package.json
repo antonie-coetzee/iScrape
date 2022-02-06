@@ -7,8 +7,7 @@
   "scripts": {
     "build": "tsc",
     "package": "npm run build && pkg . --output package/iscrape.exe && npm run package-chrome",
-    "package-chrome": "Xcopy /E /I /Y \".\\node_modules\\puppeteer\\.local-chromium\\win64-950341\" \".\\package\"",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "package-chrome": "Xcopy /E /I /Y \".\\node_modules\\puppeteer\\.local-chromium\\win64-950341\" \".\\package\""
   },
   "repository": {
     "type": "git",

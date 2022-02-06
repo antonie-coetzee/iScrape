@@ -1,16 +1,17 @@
 import { Page } from "puppeteer";
 import { ScrapeSetup } from "./ScrapeSetup";
 
-let count = 0;
+let index = 0;
+let total = 33;
 
 const setup: ScrapeSetup = {
   concurrency: 5,
   generator: async function* (cntx): AsyncIterableIterator<string | undefined> {
-    while (count <= 10) {
+    while (index <= total) {
       yield `https://opticalalliance.co.za/optom-search-results/itemlist/filter?start=${
-        count * 10
+        index * 10
       }&Itemid=630`;
-      count++;
+      index++;
     }
   },
   navigator: async (cntx) => {
@@ -43,7 +44,7 @@ const setup: ScrapeSetup = {
   },
 
   selector: async (cntx) => {
-    const practiseName = await safeStringEval(
+    const practiceName = await safeStringEval(
       cntx.page,
       "#k2Container .itemTitle"
     );
@@ -87,7 +88,7 @@ const setup: ScrapeSetup = {
     } catch {}
 
     return {
-      practiseName: practiseName.trim(),
+      practiceName: practiceName.trim(),
       memberName: memberName.trim(),
       cityTown: cityTown.trim(),
       area: area.trim(),
@@ -97,7 +98,7 @@ const setup: ScrapeSetup = {
       email: String(email),
     };
   },
-  outputPath: "./results.json",
+  outputPath: "./results.xlsx",
 };
 
 async function safeStringEval(page: Page, selector: string) {
