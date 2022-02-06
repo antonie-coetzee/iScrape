@@ -53,5 +53,11 @@ const loader = debugMode
 const scraper = new Scraper(logger, loader, rootDir, debugMode);
 
 (async function () {
-  await scraper.scrape(debugMode ? "default" : options.setup);
+  try{
+    await scraper.scrape(debugMode ? "default" : options.setup);
+  }catch(e){
+    logger.error(String(e));  
+    logger.end();
+    process.exit(0)
+  }
 })();

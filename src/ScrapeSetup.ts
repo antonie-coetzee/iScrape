@@ -16,7 +16,7 @@ export type SelectorContext = NavigatorContext & {
 
 export type Generator = (context: BaseContext) => AsyncIterableIterator<string | undefined>;
 
-export type Navigator = (context: NavigatorContext) => Promise<Page[]>;
+export type Navigator = (context: NavigatorContext) => Promise<(()=>Promise<Page>)[] | undefined>;
 
 export type ScrapeObject = { [index: string]: string | undefined };
 
@@ -31,4 +31,5 @@ export type ScrapeSetup = {
   maxItterations?: number;
   outputPath?: string;
   outputUrls?: boolean;
+  concurrency?: number;
 };

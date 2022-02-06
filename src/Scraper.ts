@@ -41,29 +41,32 @@ export class Scraper {
         throw new Error(`max itterations exceeded: '${maxItterations}'`);
       }
 
-      this.logger.info(`(${i}) url: '${url}'`);
+      this.logger.info(`[${i}] url: '${url}'`);
       const navigatorContext = {
         ...baseContext,
         url,
         browser,
       };
-      const pages = await setup.navigator(navigatorContext);
-      if (pages == null || pages.length === 0) {
-        this.logger.warn(`unable to navitage to: '${url}', skipping`);
+      const pageProducers = await setup.navigator(navigatorContext);
+      if (pageProducers == null || pageProducers.length === 0) {
+        this.logger.warn(`[${i}] unable to navitage to: '${url}', skipping`);
         continue;
       }
-      this.logger.info(`scraping data`);
-      for(const page of pages) {
-        const selectorContext = { ...navigatorContext, page };  
-        const scrapeObj = await setup.selector(selectorContext);
-        if (scrapeObj == null) {
-          this.logger.warn(
-            `unable to scrape data from: '${page.url()}', skipping`
-          );
-          continue;
-        }
-        scrapedData.push({ url:page.url(), data: scrapeObj });
-        await page.close();
+      for(const chunkProducers of chunk(pageProducers, setup.concurrency || 1)) {
+        await Promise.all(chunkProducers.map(async (pp)=>{
+          const page = await pp();
+          this.logger.info(`[${i}] scraping data from ${page.url()}`);
+          const selectorContext = { ...navigatorContext, page };  
+          const scrapeObj = await setup.selector(selectorContext);
+          if (scrapeObj == null) {
+            this.logger.warn(
+              `[${i}] unable to scrape data from: '${page.url()}', skipping`
+            );
+            return
+          }
+          scrapedData.push({ url:page.url(), data: scrapeObj });
+          await page.close();
+        }));
       }
     }
 
@@ -94,7 +97,7 @@ export class Scraper {
     const extension = path.extname(absPath);
     switch (extension) {
       case ".json":
-        await writeFile(absPath, JSON.stringify(outputData));
+        await writeFile(absPath, JSON.stringify(outputData, null, 2));
         break;
       case ".csv":
       case ".xlsx":
@@ -108,4 +111,16 @@ export class Scraper {
         break;
     }
   }
+}
+
+function chunk<T> (arr:T[], len:number) {
+  var chunks = [],
+      i = 0,
+      n = arr.length;
+
+  while (i < n) {
+    chunks.push(arr.slice(i, i += len));
+  }
+
+  return chunks;
 }
