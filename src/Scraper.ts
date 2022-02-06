@@ -1,4 +1,4 @@
-import { writeFile, mkdir } from "fs/promises";
+import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import puppeteer from "puppeteer";
 import { Logger } from "winston";
@@ -7,8 +7,12 @@ import { Loader } from "./loader";
 import { ScrapeObject, ScrapeSetup } from "./ScrapeSetup";
 
 export class Scraper {
-  constructor(private logger: Logger, private loader: Loader, private rootDir:string,  private debugMode: boolean) {
-  }
+  constructor(
+    private logger: Logger,
+    private loader: Loader,
+    private rootDir: string,
+    private debugMode: boolean
+  ) {}
 
   async scrape(setupPath: string) {
     this.logger.info(`loading setup from: '${setupPath}'`);
@@ -52,21 +56,26 @@ export class Scraper {
         this.logger.warn(`[${i}] unable to navitage to: '${url}', skipping`);
         continue;
       }
-      for(const chunkProducers of chunk(pageProducers, setup.concurrency || 1)) {
-        await Promise.all(chunkProducers.map(async (pp)=>{
-          const page = await pp();
-          this.logger.info(`[${i}] scraping data from ${page.url()}`);
-          const selectorContext = { ...navigatorContext, page };  
-          const scrapeObj = await setup.selector(selectorContext);
-          if (scrapeObj == null) {
-            this.logger.warn(
-              `[${i}] unable to scrape data from: '${page.url()}', skipping`
-            );
-            return
-          }
-          scrapedData.push({ url:page.url(), data: scrapeObj });
-          await page.close();
-        }));
+      for (const chunkProducers of chunk(
+        pageProducers,
+        setup.concurrency || 1
+      )) {
+        await Promise.all(
+          chunkProducers.map(async (pp) => {
+            const page = await pp();
+            this.logger.info(`[${i}] scraping data from ${page.url()}`);
+            const selectorContext = { ...navigatorContext, page };
+            const scrapeObj = await setup.selector(selectorContext);
+            if (scrapeObj == null) {
+              this.logger.warn(
+                `[${i}] unable to scrape data from: '${page.url()}', skipping`
+              );
+              return;
+            }
+            scrapedData.push({ url: page.url(), data: scrapeObj });
+            await page.close();
+          })
+        );
       }
     }
 
@@ -92,7 +101,7 @@ export class Scraper {
       ? scrapedData
       : scrapedData.map((d) => d.data);
     const absPath = path.resolve(this.rootDir, outputPath);
-    await mkdir(path.dirname(absPath), {recursive:true})
+    await mkdir(path.dirname(absPath), { recursive: true });
     this.logger.info(`writing output to: '${absPath}'`);
     const extension = path.extname(absPath);
     switch (extension) {
@@ -113,14 +122,12 @@ export class Scraper {
   }
 }
 
-function chunk<T> (arr:T[], len:number) {
+function chunk<T>(arr: T[], len: number) {
   var chunks = [],
-      i = 0,
-      n = arr.length;
-
+    i = 0,
+    n = arr.length;
   while (i < n) {
-    chunks.push(arr.slice(i, i += len));
+    chunks.push(arr.slice(i, (i += len)));
   }
-
   return chunks;
 }
